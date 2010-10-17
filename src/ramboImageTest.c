@@ -16,8 +16,8 @@ main (int argc, char **argv)
 
     if (v_imagePtr)
     {
-      printf ("(rambo:image width: %u heigth: %u)\n",
-              v_imagePtr->width, v_imagePtr->height);
+      printf ("(rambo:image width: %u heigth: %u pixel-size: %u)\n",
+              v_imagePtr->width, v_imagePtr->height, v_imagePtr->pixelSize);
       RAMBO_FREE (&v_imagePtr);
     }
   }

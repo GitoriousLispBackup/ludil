@@ -17,8 +17,14 @@ ramboImageFromFile (ramboPath_t p_path)
   png_structp              v_pngReadPtr    = NULL;
   png_infop                v_pngInfoPtr    = NULL;
   png_infop                v_pngEndInfoPtr = NULL;
+
   png_uint_32              v_width         = 0;
   png_uint_32              v_height        = 0;
+  png_uint_32              v_colorType     = 0;
+  png_uint_32              v_bitDepth      = 0;
+  png_uint_32              v_channels      = 0;
+  png_uint_32              v_rowBytes      = 0;
+
   png_bytepp               v_rowPtr        = NULL;
   ramboSize_t              v_i             = 0;
   ramboSize_t              v_ii            = 0;
@@ -72,27 +78,36 @@ ramboImageFromFile (ramboPath_t p_path)
                    PNG_TRANSFORM_IDENTITY,
                    NULL);
 
-     /* get dimensions */
-     v_width = png_get_image_width (v_pngReadPtr, v_pngInfoPtr);
-     v_height = png_get_image_height (v_pngReadPtr, v_pngInfoPtr);
+    /* get dimensions */
+    v_width = png_get_image_width (v_pngReadPtr, v_pngInfoPtr);
+    v_height = png_get_image_height (v_pngReadPtr, v_pngInfoPtr);
+
+    /* get color information */
+    v_colorType = png_get_color_type (v_pngReadPtr, v_pngInfoPtr);
+    v_bitDepth  = png_get_bit_depth (v_pngReadPtr, v_pngInfoPtr);
+    v_channels = png_get_channels (v_pngReadPtr, v_pngInfoPtr);
+    v_rowBytes = png_get_rowbytes (v_pngReadPtr, v_pngInfoPtr);
 
     /* get rows */ 
     v_rowPtr = png_get_rows (v_pngReadPtr, v_pngInfoPtr); 
     if (!v_rowPtr)
       goto EXCEPTION;
 
-    v_imagePtr = (ramboImage_t *)ramboAlloc ( sizeof(ramboImage_t)+(v_width*v_height));
+    v_imagePtr = (ramboImage_t *)ramboAlloc (sizeof(ramboImage_t)+(v_rowBytes*v_height));
 
     if (!v_imagePtr)
       goto EXCEPTION;
 
+    /* setting image attributes */
     v_imagePtr->width = (ramboSize_t)v_width;
     v_imagePtr->height = (ramboSize_t)v_height;
+
+    v_imagePtr->pixelSize = v_rowBytes/v_width;
 
     /* copying data into an image */
     for (v_i = 0; v_i < v_height; v_i++)
     {
-      for (v_ii = 0; v_ii < v_width; v_ii++)
+      for (v_ii = 0; v_ii < v_rowBytes; v_ii++)
       {
         v_imagePtr->data [v_i+v_ii] = v_rowPtr [v_i][v_ii]; 
       }

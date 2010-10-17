@@ -8,6 +8,7 @@ typedef struct
 {
   ramboSize_t   width;
   ramboSize_t   height;
+  ramboSize_t   pixelSize;  
 
   ramboData_t   data;
 } ramboImage_t;
