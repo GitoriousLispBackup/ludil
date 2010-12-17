@@ -1,5 +1,5 @@
 # general settings
-project_name = 'rambo'
+project_name = 'ludil'
 project_version = '0.1'
 project_arch = 'x86-64'
 
