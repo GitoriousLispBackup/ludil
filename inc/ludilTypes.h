@@ -3,35 +3,74 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <inttypes.h>
+#include <ludilType.h>
 
-/* signed integer types */
-typedef int8_t  ludilInt8_t;
+/* ------------------------------------------------------------ */
+/** @defgroup base
+ *  @brief ludil base 
+ *  Contains the basic functionality for other ludil extensions
+ */
+/* ------------------------------------------------------------ */
+
+/* ------------------------------------------------------------ */
+/** @file ludilTypes.h
+ *  @author Josef P. Bernhart 
+ *  @date 12-27-2010
+ *  @ingroup base
+ *
+ *  Is a the main types definitions file, will be modularized
+ *  in later releases
+ */
+/* ------------------------------------------------------------ */
+
+/** @addtogroup ludil_sit signed integer types */
+/*@{*/
+/** signed int 1 byte ( 8 bit ) */
+typedef int8_t  ludilInt8_t; 
+/** signed int 2 bytes ( 16 bit ) */
 typedef int16_t ludilInt16_t;
+/** signed int 4 bytes ( 32 bit ) */
 typedef int32_t ludilInt32_t;
+/** signed int 8 bytes ( 64 bit ) */
 typedef int64_t ludilInt64_t;
+/*@}*/
 
-/* unsigned integer types */
+/** @addtogroup ludil_uit unsigned integer types */
+/*@{*/
 typedef uint8_t  ludilUInt8_t;
 typedef uint16_t ludilUInt16_t;
 typedef uint32_t ludilUInt32_t;
 typedef uint64_t ludilUInt64_t;
 
 typedef ludilUInt8_t ludilByte_t;
+/*@}*/
 
-/* abstract integer types */
-typedef size_t ludilSize_t;
+/** @addtogroup ludil_at abstract integer types */
+/*@{*/
+/** The size of some data in bytes */
+typedef size_t      ludilSize_t;
+/** The length of some data in units */
+typedef size_t      ludilLength_t;
+/** An offset into an array in units, not bytes */
+typedef ludilSize_t ludilOffset_t;
+/*@}*/
 
-/* internal string type */
-typedef char * ludilInternalString_t;     /* a internal string is a string which is only used by ludil */
+/** @addtogroup ludil_trt time related types */
+/*@{*/ 
+/** type for saving the time since 
+ *  the start of a ludil session in miliseconds */
+typedef uint32_t    ludilTicks_t;
+/*@}*/
 
-/* filepath string */
-typedef const char * ludilPath_t;
+/** @addtogroup ludil_at array types */
+/*@{*/
+typedef ludilByte_t ludilData_t [1];
+/*@}*/
 
-/* array types */
-typedef ludilByte_t ludilData_t[1];
-
-/* pointer types */
-typedef void * ludilPtr_t;
+/** @addtogroup ludil_ptrt pointer types */
+/*@{*/
+typedef char *ludilPtr_t;
 
 typedef ludilUInt8_t *ludilPtrUInt8_t;
 typedef ludilUInt16_t *ludilPtrUInt16_t;
@@ -44,84 +83,101 @@ typedef ludilInt32_t *ludilPtrInt32_t;
 typedef ludilInt64_t *ludilPtrInt64_t;
 
 typedef ludilSize_t *ludilPtrSize_t;
-typedef ludilInternalString_t *ludilPtrInternalString_t;
+/*@}*/
 
+/** @addtogroup ludil_reft reference types */
+/*@{*/
+typedef unsigned int ludilId_t;     
+/*@}*/
 
-/* reference types */
-typedef unsigned int ludilId_t;     /* an id, can be used as a reference  */
-
-/* boolean type */
-typedef unsigned int ludilBool_t;
-
-#define TRUE  1
-#define FALSE 0 
-
-/* enumeration integer types */
+/** ludil boolean type */
 typedef enum 
-{
-  ludilTypeBasicRange       = 0,
-  ludilTypeNone,
-  ludilTypeInt8,
-  ludilTypeInt16,
-  ludilTypeInt32,
-  ludilTypeInt64,
+{ 
+  FALSE = 0, 
+  UNSURE, 
+  TRUE
+} ludilBool_t;
 
-  ludilTypeUInt8,
-  ludilTypeUInt16,
-  ludilTypeUInt32,
-  ludilTypeUInt64,
-  
-  ludilTypeByte,
+#define SUCCESS TRUE
+#define FAILURE FALSE
+#define IS_TRUE(x) (x == TRUE)
 
-  ludilTypeSize,
 
-  ludilTypeString,
-  ludilTypeInternalString,
-  ludilTypePath,
+/** @addtogroup ludil_structt structure types */
+/*@{*/
 
-  ludilTypeData,
-  ludilTypeBlob,
-
-  ludilTypeBool,
-  ludilTypeObject, 
-  ludilTypeId,
-  ludilTypePtr,
-  ludilType,
-
-  ludilTypeSoundRange       = 100,
-  ludilTypeNetRange         = 200,
-  ludilTypeVideoRange       = 300,
-  ludilTypeInputRange       = 400,
-  ludilTypeOutputRange      = 500,
-  ludilTypeImageRange       = 600,
-  ludilTypeSignalRange      = 700,
-  ludilTypeExtendRange      = 800,
-  ludilTypeFileRange        = 900
-} ludilType_t;
-
-/* structure types */
-
-/* general object */
+/* ------------------------------------------------------------ */
+/** @brief ludil general object 
+ *
+ *  A structure which describes a specific piece of data, to
+ *  which to which a pointer points to. So the object attaches
+ *  a type to some piece of data in the memory.
+ * */
+/* ------------------------------------------------------------ */
 typedef struct
 {
-  ludilId_t     id;         /* id of data */
-  ludilType_t   type;       /* type of data */
-  ludilPtr_t    pointer;    /* pointer to contained data */
+  ludilId_t     id;         /**< id of data */
+  ludilType_t   type;       /**< type of data */
+  ludilPtr_t    pointer;    /**< pointer to contained data */
 } ludilObject_t;
 
 typedef ludilObject_t *ludilRef_t;  
 
-/* array types */
+
+/* ------------------------------------------------------------ */
+/** @brief ludil binary large object 
+ *
+ *  A structure for holding variable length data of any kind, 
+ *  in an unoptimized way.
+ *  
+ *  Examples would be:
+ *  - an image 
+ *  - a soundfile 
+ *  - a save game 
+ *  - etc.
+ */
+/* ------------------------------------------------------------ */
 typedef struct 
 {
-  ludilSize_t     size;
-  ludilData_t     data;
+  ludilSize_t     size;     /**< size of blob structure in memory, 
+                                 as a blob is of variable size */
+  ludilSize_t     length;   /**< size of contained data */
+  ludilData_t     data;    /**< data contained within the blob */
 } ludilBlob_t;
 
+/** @addtogroup ludil_strt string related types */
+/*@{*/
+
+/* ------------------------------------------------------------ */
+/** @brief ludil string 
+ *
+ *  Is the string type for storing ludil strings
+ *  This string type handles UTF-8 encoded counted strings
+ */
+/* ------------------------------------------------------------ */
 typedef ludilBlob_t ludilString_t;
 
+/* ------------------------------------------------------------ */
+/** @brief ludil filepath string
+ *
+ *  Holds a filepath for accessing files on the operating system
+ */
+/* ------------------------------------------------------------ */
+typedef const char *ludilPath_t;
+/*@}*/
+
+/*@}*/
 
 /* type macros */
 #define LUDIL_PTR_NULL  NULL
+
+/* print macros */
+# if __WORDSIZE == 64
+#   define PRI_L_SIZE "lu"
+# else 
+#   define PRI_L_SIZE "llu"
+# endif
+
+#define PRI_L_OFFSET PRI_L_SIZE
 
 #endif

@@ -4,11 +4,34 @@
 #include <stdlib.h>
 #include <ludilTypes.h>
 
-/* macros */
-#define LUDIL_FREE(ptr_ptr) if (*ptr_ptr) { free((void *)*ptr_ptr); *ptr_ptr = NULL; }
-#define LUDIL_ALLOC(var,size) var = (typeof (var))malloc(size);
 
-/* functions */
-ludilPtr_t ludilAlloc (ludilSize_t p_size); 
-void ludilFree (ludilPtr_t *p_dataPtr);
+/* ------------------------------------------------------------ */
+/** ludilAlloc
+ * 
+ * Allocates an amount of bytes and returns the pointer to it
+ *
+ * @param p_size      @b [In] size of data, which should be allocated
+ *
+ * @return
+ *  pointer to allocated data structure
+ */
+/* ------------------------------------------------------------ */
+ludilPtr_t 
+ludilAlloc (ludilSize_t p_size); 
+/* ------------------------------------------------------------ */
+
+/* ------------------------------------------------------------ */
+/** ludilFree
+ *
+ * Frees a given data structure
+ * 
+ * @param p_dataPtr       @b [In] pointer to a pointer to the
+ *                                allocated data structure
+ * @return
+ * nothing
+ */
+/* ------------------------------------------------------------ */
+void 
+ludilFree (ludilPtr_t *p_dataPtr);
+/* ------------------------------------------------------------ */
 #endif

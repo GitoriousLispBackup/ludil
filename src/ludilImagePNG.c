@@ -6,8 +6,10 @@
 
 static const ludilSize_t ludilPNGSigCmpSize_C = 8;
 
+/*  ------------------------------------------------------------ */
 ludilImage_t *
 ludilImageFromFile (ludilPath_t p_path)
+/*  ------------------------------------------------------------ */
 {
   FILE                    *v_filePtr  = NULL;
   ludilImage_t            *v_imagePtr = NULL;  
