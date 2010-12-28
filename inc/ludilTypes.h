@@ -38,11 +38,16 @@ typedef int64_t ludilInt64_t;
 
 /** @addtogroup ludil_uit unsigned integer types */
 /*@{*/
+/** unsigned int 1 byte ( 8 bit ) */
 typedef uint8_t  ludilUInt8_t;
+/** unsigned int 2 byte ( 16 bit ) */
 typedef uint16_t ludilUInt16_t;
+/** unsigned int 4 byte ( 32 bit ) */
 typedef uint32_t ludilUInt32_t;
+/** unsigned int 8 byte ( 64 bit ) */
 typedef uint64_t ludilUInt64_t;
 
+/** unsigned int 1 byte ( 8 bit ) an alias for ludiUInt8_t */
 typedef ludilUInt8_t ludilByte_t;
 /*@}*/
 
@@ -65,28 +70,47 @@ typedef uint32_t    ludilTicks_t;
 
 /** @addtogroup ludil_at array types */
 /*@{*/
+/** a variable sized piece of data */
 typedef ludilByte_t ludilData_t [1];
 /*@}*/
 
 /** @addtogroup ludil_ptrt pointer types */
 /*@{*/
+/** general pointer */
 typedef char *ludilPtr_t;
 
+/** pointer to unsigned int 1 byte ( 8 bit )  */
 typedef ludilUInt8_t *ludilPtrUInt8_t;
+/** pointer to unsigned int 2 byte ( 16 bit )  */
 typedef ludilUInt16_t *ludilPtrUInt16_t;
+/** pointer to unsigned int 4 byte ( 32 bit )  */
 typedef ludilUInt32_t *ludilPtrUInt32_t;
+/** pointer to unsigned int 8 byte ( 64 bit )  */
 typedef ludilUInt64_t *ludilPtrUInt64_t;
 
+/** pointer to signed int 1 byte ( 8 bit )  */
 typedef ludilInt8_t *ludilPtrInt8_t;
+/** pointer to signed int 2 byte ( 16 bit )  */
 typedef ludilInt16_t *ludilPtrInt16_t;
+/** pointer to signed int 4 byte ( 32 bit )  */
 typedef ludilInt32_t *ludilPtrInt32_t;
+/** pointer to signed int 8 byte ( 64 bit )  */
 typedef ludilInt64_t *ludilPtrInt64_t;
 
+/** pointer to size value  */
 typedef ludilSize_t *ludilPtrSize_t;
 /*@}*/
 
 /** @addtogroup ludil_reft reference types */
 /*@{*/
+
+/* ------------------------------------------------------------ */
+/** Identifying numeric value for a specific piece of data, 
+ *  in contrast to a pointer its value doesn't represent
+ *  an address in memory. It can be an offset into an 
+ *  array, but it doesn't need to be. 
+ */
+/* ------------------------------------------------------------ */
 typedef unsigned int ludilId_t;     
 /*@}*/
 

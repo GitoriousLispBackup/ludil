@@ -69,24 +69,24 @@ void ludilTestStart (ludilTestEnv_t *p_env);
 
 /* this test can fail, it means, that the other tests after this one are executed, even when this one fails */ 
 #define TESTC(name) \
-  printf ("[TEST] %s\n",  g_ludilTest_ ## name ## _what); \
+  printf ("[TEST] %s START\n",  g_ludilTest_ ## name ## _what); \
   if (name()) { \
   if (v_ludilTest_print) \
-  printf("[TEST] %s ...............SUCCESS\n", g_ludilTest_ ## name ## _what); \
+  printf("[TEST] %s END ...............SUCCESS\n", g_ludilTest_ ## name ## _what); \
   v_ludilTest_result = 0; } else { \
   if (v_ludilTest_print) \
-  printf("[TEST] %s ...............FAILED\n", g_ludilTest_ ## name ## _what); \
+  printf("[TEST] %s END ...............FAILED\n", g_ludilTest_ ## name ## _what); \
   v_ludilTest_result = 1; }
 
 /* this test must no fail, it means that the other tests after this one aren't executed when this test fails */
 #define TESTM(name) \
-  printf ("[TEST] %s\n",  g_ludilTest_ ## name ## _what); \
+  printf ("[TEST] %s START\n",  g_ludilTest_ ## name ## _what); \
   if (name()) { \
   if (v_ludilTest_print) \
-  printf("[TEST] %s ...............SUCCESS\n", g_ludilTest_ ## name ## _what); \
+  printf("[TEST] %s END ...............SUCCESS\n", g_ludilTest_ ## name ## _what); \
   v_ludilTest_result = 0; } else { \
   if (v_ludilTest_print) \
-  printf("[TEST] %s ...............FAILED\n", g_ludilTest_ ## name ## _what); \
+  printf("[TEST] %s END ...............FAILED\n", g_ludilTest_ ## name ## _what); \
   return 1; }
 
 /* asserts are small one line tests */

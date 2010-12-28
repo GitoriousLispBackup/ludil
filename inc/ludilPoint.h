@@ -11,12 +11,19 @@
  */
 /* ------------------------------------------------------------ */
 
-
-
+/* ------------------------------------------------------------ */
+/** @brief 2d point type
+ *
+ *  Describes a two dimensional point in the 
+ *  coordinate system of the screen.
+ *
+ *  
+ */
+/* ------------------------------------------------------------ */
 typedef struct 
 {
-  ludilOffset_t x;
-  ludilOffset_t y;
+  ludilOffset_t x; /**< x position of the point, always positive (x >= 0) */
+  ludilOffset_t y; /**< y position of the point, always positive (y >= 0) */
 } ludilPoint_t;
 
 /* ------------------------------------------------------------ */
