@@ -2,29 +2,28 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <ludilTypes.h>
 
+/* ------------------------------------------------------------ */
+static const char g_failure [] = "\x1b[31mFAILURE\x1b[m";
+static const char g_success [] = "\x1b[32mSUCCESS\x1b[m";
+static const char g_assert [] = "[ASSERT]";
+/* ------------------------------------------------------------ */
 
-static void 
-ludilTestPrintHelp (ludilTestEnv_t *p_env)
+/* ------------------------------------------------------------ */
+ludilBool_t
+ludilTestPrintAssert (ludilTestEnv_t *p_envPtr,
+                      const char     *p_text, 
+                      const char     *p_assertStr,
+                      ludilBool_t     p_result)
+/* ------------------------------------------------------------ */
 {
-  printf ("-h\tprints this help\n");
-  printf ("-q\tturns on quiet mode, no output\n");
+  printf ("%s %s (%s) ............... %s\n", 
+          g_assert,
+          p_text, 
+          p_assertStr,
+          (IS_TRUE(p_result)) ? (g_success) : (g_failure));
+
+  return p_result;
 }
 
-void 
-ludilTestStart (ludilTestEnv_t *p_env)
-{
-  while ((v_ludilTest_option = getopt (argc, argv, "qh")) != -1)
-  {
-    switch (v_ludilTest_option)
-    {
-      case 'h': 
-      ludilTestPrintHelp (p_env);
-      break;
-
-      case 'q':\
-      p_env->print = 0;
-      break; 
-    }
-  }
-}

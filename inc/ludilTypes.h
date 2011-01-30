@@ -4,7 +4,6 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <inttypes.h>
-#include <ludilType.h>
 
 /* ------------------------------------------------------------ */
 /** @defgroup base
@@ -12,6 +11,55 @@
  *  Contains the basic functionality for other ludil extensions
  */
 /* ------------------------------------------------------------ */
+
+/* ------------------------------------------------------------ */
+/** @brief ludil meta type 
+ *
+ * Which holds the information, what a specific thing is.
+ * Normally this is attached to ludil objects.
+ */
+/* ------------------------------------------------------------ */
+typedef enum 
+{
+  ludilTypeBasicRange       = 0,
+  ludilTypeNone,
+  ludilTypeInt8,
+  ludilTypeInt16,
+  ludilTypeInt32,
+  ludilTypeInt64,
+
+  ludilTypeUInt8,
+  ludilTypeUInt16,
+  ludilTypeUInt32,
+  ludilTypeUInt64,
+  
+  ludilTypeByte,
+
+  ludilTypeSize,
+
+  ludilTypeString,
+  ludilTypeInternalString,
+  ludilTypePath,
+
+  ludilTypeData,
+  ludilTypeBlob,
+
+  ludilTypeBool,
+  ludilTypeObject, 
+  ludilTypeId,
+  ludilTypePtr,
+  ludilType,
+
+  ludilTypeSoundRange       = 1000,
+  ludilTypeNetRange         = 2000,
+  ludilTypeVideoRange       = 3000,
+  ludilTypeInputRange       = 4000,
+  ludilTypeOutputRange      = 5000,
+  ludilTypeImageRange       = 6000,
+  ludilTypeSignalRange      = 7000,
+  ludilTypeFileRange        = 8000,
+  ludilTypeExtendRange      = 9000
+} ludilType_t;
 
 /* ------------------------------------------------------------ */
 /** @file ludilTypes.h
@@ -122,10 +170,8 @@ typedef enum
   TRUE
 } ludilBool_t;
 
-#define SUCCESS TRUE
-#define FAILURE FALSE
 #define IS_TRUE(x) (x == TRUE)
-
+#define IS_FALSE(x) (x == FALSE)
 
 /** @addtogroup ludil_structt structure types */
 /*@{*/
@@ -165,7 +211,7 @@ typedef struct
 {
   ludilSize_t     size;     /**< size of blob structure in memory, 
                                  as a blob is of variable size */
-  ludilSize_t     length;   /**< size of contained data */
+  ludilSize_t     length;   /**< size of contained data, so how much of the data is actually used */
   ludilData_t     data;    /**< data contained within the blob */
 } ludilBlob_t;
 

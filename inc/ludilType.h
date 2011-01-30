@@ -1,3 +1,6 @@
+#ifndef LUDIL_TYPE_H
+#define LUDIL_TYPE_H
+
 #include <ludilTypes.h>
 
 
@@ -14,51 +17,25 @@
 
 
 /* ------------------------------------------------------------ */
-/** @brief ludil meta type 
+/**
+ *  Converts a meta type to a descriptive string
  *
- * Which holds the information, what a specific thing is.
- * Normally this is attached to ludil objects.
+ *  @param p_type           @b [In] type to convert
  */
 /* ------------------------------------------------------------ */
-typedef enum 
-{
-  ludilTypeBasicRange       = 0,
-  ludilTypeNone,
-  ludilTypeInt8,
-  ludilTypeInt16,
-  ludilTypeInt32,
-  ludilTypeInt64,
+/*const char *ludilTypeToString (ludilType_t p_type); */
+/* ------------------------------------------------------------ */
 
-  ludilTypeUInt8,
-  ludilTypeUInt16,
-  ludilTypeUInt32,
-  ludilTypeUInt64,
-  
-  ludilTypeByte,
+/* ------------------------------------------------------------ */
+/**
+ *  Converts a string to a type
+ *
+ *  @param p_typeStr           @b [In] type string to convert
+ */
+/* ------------------------------------------------------------ */
+/*
+ludilType_t ludilStringToType (const char *p_typeStr); */
+/* ------------------------------------------------------------ */
 
-  ludilTypeSize,
 
-  ludilTypeString,
-  ludilTypeInternalString,
-  ludilTypePath,
-
-  ludilTypeData,
-  ludilTypeBlob,
-
-  ludilTypeBool,
-  ludilTypeObject, 
-  ludilTypeId,
-  ludilTypePtr,
-  ludilType,
-
-  ludilTypeSoundRange       = 1000,
-  ludilTypeNetRange         = 2000,
-  ludilTypeVideoRange       = 3000,
-  ludilTypeInputRange       = 4000,
-  ludilTypeOutputRange      = 5000,
-  ludilTypeImageRange       = 6000,
-  ludilTypeSignalRange      = 7000,
-  ludilTypeExtendRange      = 8000,
-  ludilTypeFileRange        = 9000
-} ludilType_t;
-
+#endif

@@ -49,7 +49,7 @@ END
 
 DEFTEST(allocTest, "testing if ludilAlloc returns")
 BEGIN
-  v_dataPtr = ludilAlloc (v_dataSize*sizeof(ludilSize_t));
+  v_dataPtr = (ludilPtrSize_t)ludilAlloc (v_dataSize*sizeof(ludilSize_t));
   if (!v_dataPtr)
     FAIL;
   SUCCESS;
