@@ -43,8 +43,11 @@ typedef struct
 } ludilEnv_t;
 
 /* ------------------------------------------------------------ */
-/**
- * 
+/** @brief initializes a kernel environment
+ *  
+ *  This procedure initializes, allocates and sets the correct
+ *  behaviour associated with a kernel environment.
+ *  It doesn't start the kernel environment.
  */
 /* ------------------------------------------------------------ */
 ludilBool_t 
@@ -52,8 +55,11 @@ ludilKernelInit (ludilEnv_t      **p_env);
 /* ------------------------------------------------------------ */
 
 /* ------------------------------------------------------------ */
-/**
+/** @brief frees the kernel environment
  * 
+ *  This procedure frees all the ressources associated 
+ *  with a kernel environment. If the env was 'running', then
+ *  it will be stopped.
  */
 /* ------------------------------------------------------------ */
 ludilBool_t 
@@ -61,8 +67,9 @@ ludilKernelFree (ludilEnv_t      **p_env);
 /* ------------------------------------------------------------ */
 
 /* ------------------------------------------------------------ */
-/**
- * 
+/** @brief starts a kernel environment
+ *  
+ *  This procedure starts a kernel environment.
  */
 /* ------------------------------------------------------------ */
 ludilBool_t 
@@ -70,8 +77,10 @@ ludilKernelStart (ludilEnv_t       *p_env);
 /* ------------------------------------------------------------ */
 
 /* ------------------------------------------------------------ */
-/**
+/** @brief stops a kernel environment
  *   
+ *  Stops a kernel environment, but doesn't free its state and
+ *  resources
  */
 /* ------------------------------------------------------------ */
 ludilBool_t 
@@ -79,8 +88,9 @@ ludilKernelStop (ludilEnv_t       *p_env);
 /* ------------------------------------------------------------ */
 
 /* ------------------------------------------------------------ */
-/**
+/** @brief loads a plugin
  * 
+ *  This procedure loads a ludil plugin
  */
 /* ------------------------------------------------------------ */
 ludilPlugin_t *
@@ -89,8 +99,10 @@ ludilKernelPluginLoad (ludilEnv_t       *p_env,
 /* ------------------------------------------------------------ */
 
 /* ------------------------------------------------------------ */
-/**
+/** @brief closes all plugins
  * 
+ *  This procedure closes all plugins associated with a kernel
+ *  environment
  */
 /* ------------------------------------------------------------ */
 ludilBool_t

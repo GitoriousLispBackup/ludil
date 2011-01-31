@@ -4,6 +4,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <inttypes.h>
+#include <ludilProjectConfig.h>
 
 /* ------------------------------------------------------------ */
 /** @defgroup base

@@ -4,10 +4,14 @@
 #include <stdlib.h>
 #include <ludilBlob.h>
 #include <string.h>
+#include <stdio.h>
 
 #define LUDIL_KERNEL_PLUGINS 10
 #define LUDIL_KERNEL_HEAP_SIZE 1024
 #define LUDIL_KERNEL_EVENTS 256
+
+#define LUDIL_PLUGIN_PREFIX (LUDIL_PROJECT_NAME"Plugin")
+#define LUDIL_PLUGIN_SUFFIX (".so")
 
 /* ------------------------------------------------------------ */
 ludilBool_t 
@@ -117,16 +121,17 @@ ludilKernelPluginLoad (ludilEnv_t       *p_env,
   ludilSize_t        v_size = 0, v_i;
   void              *v_handler = NULL;
   ludilPlugin_t      v_buf;
-  void              (*v_cb)(void) = NULL;
+  void             (*v_cb)(void) = NULL;
 
-  puts ("hi!");
+  char               v_initStr [] = "Init";   
+  char               v_symbolStr [256];
+
+  v_symbolStr [0] = '\0';
 
   if (p_env && p_pluginName)
   {
     v_plugin = (ludilPlugin_t *)p_env->pluginList->data;
     v_size = (p_env->pluginList->length)/(sizeof (ludilPlugin_t));
-
-    puts ("searching");
 
     /* search for plugin */
     for (v_i = 0; v_i < v_size; v_i++)
@@ -135,18 +140,14 @@ ludilKernelPluginLoad (ludilEnv_t       *p_env,
         return &(v_plugin [v_i]); 
     }
 
-    puts ("opening");
-
     /* ok, no plugin found, so open it */
     v_handler = dlopen (p_pluginName, RTLD_NOW);
 
     /* make an entry, but only if we have a valid handler */
     if (v_handler)
     {
-      printf ("v_handler %d\n", v_handler);
       v_plugin = (ludilPlugin_t *)ludilBlobHere (p_env->pluginList);
 
-      puts ("allocating");
       p_env->pluginList = ludilBlobAlloc (p_env->pluginList, sizeof (ludilPlugin_t)+sizeof(void *));
 
       v_plugin->name = ludilBlobHere (p_env->heap);
@@ -157,7 +158,15 @@ ludilKernelPluginLoad (ludilEnv_t       *p_env,
       p_env->heap = ludilBlobAdd (p_env->heap, (ludilPtr_t)p_pluginName, strlen (p_pluginName)+1); 
 
       /* we got a handler ... init the plugin */
-      v_cb = dlsym (v_handler,  "ludilPluginInit");
+      snprintf (v_symbolStr,
+                sizeof (v_symbolStr),
+                "%s%s%s%s",
+                LUDIL_PLUGIN_PREFIX,
+                p_pluginName,
+                v_initStr,
+                LUDIL_PLUGIN_SUFFIX);
+
+      v_cb = dlsym (v_handler,  v_symbolStr);
       if (v_cb)
         v_cb ();
       else
