@@ -10,8 +10,10 @@
 #define LUDIL_KERNEL_HEAP_SIZE 1024
 #define LUDIL_KERNEL_EVENTS 256
 
-#define LUDIL_PLUGIN_PREFIX (LUDIL_PROJECT_NAME"Plugin")
-#define LUDIL_PLUGIN_SUFFIX (".so")
+#define LUDIL_PLUGIN_PREFIX LUDIL_PROJECT_NAME"Plugin"
+#define LUDIL_PLUGIN_SUFFIX ""
+#define LUDIL_PLUGIN_FILE_PREFIX "lib"LUDIL_PLUGIN_PREFIX
+#define LUDIL_PLUGIN_FILE_SUFFIX LUDIL_PLUGIN_SUFFIX".so" 
 
 /* ------------------------------------------------------------ */
 ludilBool_t 
@@ -112,6 +114,38 @@ ludilKernelAddCString (ludilEnv_t      *p_env,
 }
 
 /* ------------------------------------------------------------ */
+static ludilBool_t
+callSymbol (void        *p_handler,
+            const char  *p_pluginName,
+            const char  *p_routine)
+/* ------------------------------------------------------------ */
+{
+  char               v_symbolStr [256];
+  void             (*v_cb)(void) = NULL;
+
+
+  /* we got a handler ... init the plugin */
+  snprintf (v_symbolStr,
+            sizeof (v_symbolStr),
+            "%s%s%s",
+            LUDIL_PLUGIN_PREFIX,
+            p_pluginName,
+            p_routine);
+
+  v_cb = dlsym (p_handler,  v_symbolStr);
+  if (v_cb)
+  {
+    v_cb ();
+    return TRUE;
+  }
+  else
+  {
+    puts ("no symbol found");
+    return FALSE;
+  }
+}
+
+/* ------------------------------------------------------------ */
 ludilPlugin_t *
 ludilKernelPluginLoad (ludilEnv_t       *p_env,
                        const char       *p_pluginName)
@@ -121,7 +155,6 @@ ludilKernelPluginLoad (ludilEnv_t       *p_env,
   ludilSize_t        v_size = 0, v_i;
   void              *v_handler = NULL;
   ludilPlugin_t      v_buf;
-  void             (*v_cb)(void) = NULL;
 
   char               v_initStr [] = "Init";   
   char               v_symbolStr [256];
@@ -141,11 +174,20 @@ ludilKernelPluginLoad (ludilEnv_t       *p_env,
     }
 
     /* ok, no plugin found, so open it */
-    v_handler = dlopen (p_pluginName, RTLD_NOW);
+    v_plugin = NULL;
+
+    snprintf (v_symbolStr,
+              sizeof (v_symbolStr),
+              "%s%s%s",
+              LUDIL_PLUGIN_FILE_PREFIX,
+              p_pluginName,
+              LUDIL_PLUGIN_FILE_SUFFIX);
+    v_handler = dlopen (v_symbolStr, RTLD_NOW);
 
     /* make an entry, but only if we have a valid handler */
     if (v_handler)
     {
+      v_symbolStr [0] = '\0';
       v_plugin = (ludilPlugin_t *)ludilBlobHere (p_env->pluginList);
 
       p_env->pluginList = ludilBlobAlloc (p_env->pluginList, sizeof (ludilPlugin_t)+sizeof(void *));
@@ -158,19 +200,14 @@ ludilKernelPluginLoad (ludilEnv_t       *p_env,
       p_env->heap = ludilBlobAdd (p_env->heap, (ludilPtr_t)p_pluginName, strlen (p_pluginName)+1); 
 
       /* we got a handler ... init the plugin */
-      snprintf (v_symbolStr,
-                sizeof (v_symbolStr),
-                "%s%s%s%s",
-                LUDIL_PLUGIN_PREFIX,
-                p_pluginName,
-                v_initStr,
-                LUDIL_PLUGIN_SUFFIX);
-
-      v_cb = dlsym (v_handler,  v_symbolStr);
-      if (v_cb)
-        v_cb ();
-      else
+      if (!callSymbol (v_handler, 
+                       p_pluginName,
+                       v_initStr))
+      {
+        p_env->pluginList->length -= sizeof (ludilPlugin_t);
+        v_plugin = NULL;
         puts ("no symbol found");
+      }
     }
   }
   return v_plugin; 

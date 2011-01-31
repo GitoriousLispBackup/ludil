@@ -10,7 +10,7 @@ main ()
   puts ("initing kernel");
   ludilKernelInit (&v_env);
 
-  v_plugin = ludilKernelPluginLoad (v_env, "libludilPluginTest.so");
+  v_plugin = ludilKernelPluginLoad (v_env, "Test");
   printf ("v_plugin : %d\n", v_plugin);
 
   puts ("freeing kernel");

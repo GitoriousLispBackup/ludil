@@ -35,10 +35,13 @@ project_config = '#/'
 # general environment settings
 # -----------------------------------------------------------
 debug_flags = '-g -ggdb'
-cflags = ''
 
-if 'debug' in COMMAND_LINE_TARGETS:
-  cflags = cflags+debug_flags
+value = ARGUMENTS.get('DEBUG', 'false')
+
+if value == 'true':
+  cflags = debug_flags
+else:
+  cflags = ''
 
 env = Environment (LIBPATH=[project_lib], 
                    CPPPATH=project_inc,
