@@ -25,6 +25,7 @@ typedef struct
 {
   char            *name;      /**< name of the plugin */
   ludilBlob_t      externCtx; /**< extern context, for the loaded plugin */
+  ludilBool_t      started;   /**< is true, if plugin was started */
 } ludilPlugin_t;
 
 /* ------------------------------------------------------------ */
@@ -40,6 +41,7 @@ typedef struct
   ludilBool_t        started;    /**< true if env was started */
   ludilBlob_t       *heap;       /**< heap, where data objects are stored */
   ludilString_t     *infoString; /**< returns the info string */
+
 } ludilEnv_t;
 
 /* ------------------------------------------------------------ */
@@ -95,18 +97,7 @@ ludilKernelStop (ludilEnv_t       *p_env);
 /* ------------------------------------------------------------ */
 ludilPlugin_t *
 ludilKernelPluginLoad (ludilEnv_t       *p_env,
-                       const char       *p_pluginName);
-/* ------------------------------------------------------------ */
-
-/* ------------------------------------------------------------ */
-/** @brief closes all plugins
- * 
- *  This procedure closes all plugins associated with a kernel
- *  environment
- */
-/* ------------------------------------------------------------ */
-ludilBool_t
-ludilKernelPluginsClose (ludilEnv_t       *p_env);
+                       char             *p_pluginName);
 /* ------------------------------------------------------------ */
 
 /* ------------------------------------------------------------ */

@@ -36,7 +36,8 @@ project_config = '#/'
 # -----------------------------------------------------------
 debug_flags = '-g -ggdb'
 
-value = ARGUMENTS.get('DEBUG', 'false')
+# value = ARGUMENTS.get('DEBUG', 'false')
+value = 'true'
 
 if value == 'true':
   cflags = debug_flags

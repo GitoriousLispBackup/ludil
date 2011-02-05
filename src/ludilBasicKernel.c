@@ -15,11 +15,14 @@
 #define LUDIL_PLUGIN_FILE_PREFIX "lib"LUDIL_PLUGIN_PREFIX
 #define LUDIL_PLUGIN_FILE_SUFFIX LUDIL_PLUGIN_SUFFIX".so" 
 
+
 /* ------------------------------------------------------------ */
 ludilBool_t 
 ludilKernelInit (ludilEnv_t      **p_env)
 /* ------------------------------------------------------------ */
 {
+  ludilPlugin_t     *v_pluginPtr = NULL;
+
   if (p_env && (*p_env == NULL)) 
   {
     *p_env = (ludilEnv_t *)malloc (sizeof (ludilEnv_t));
@@ -34,56 +37,13 @@ ludilKernelInit (ludilEnv_t      **p_env)
 
     /* init the plugin list */
     ludilBlobInit (&(*p_env)->pluginList, (sizeof (ludilPlugin_t *)+sizeof (void *))*LUDIL_KERNEL_PLUGINS);
+
+    /* load the lisp plugin */
+    v_pluginPtr = ludilKernelPluginLoad ((*p_env), "Lisp");
   }
 DONE:
   return TRUE;
 EXIT:
-  return FALSE;
-}
-
-/* ------------------------------------------------------------ */
-ludilBool_t 
-ludilKernelFree (ludilEnv_t      **p_env)
-/* ------------------------------------------------------------ */
-{
-  if (p_env && (*p_env))
-  {
-    ludilKernelPluginsClose (*p_env);
-
-    ludilBlobFree (&(*p_env)->heap);
-    ludilBlobFree (&(*p_env)->pluginList);
-  }
-DONE:
-  return TRUE;
-EXIT:
-  return FALSE;
-}
-
-/* ------------------------------------------------------------ */
-ludilBool_t 
-ludilKernelStart (ludilEnv_t       *p_env)
-/* ------------------------------------------------------------ */
-{
-  if (p_env && (p_env->started == FALSE))
-  {
-    p_env->started = TRUE;
-
-    return TRUE; 
-  }
-  return FALSE;
-}
-
-/* ------------------------------------------------------------ */
-ludilBool_t 
-ludilKernelStop (ludilEnv_t       *p_env)
-/* ------------------------------------------------------------ */
-{
-  if (p_env && (p_env->started == TRUE))
-  {
-    p_env->started = FALSE;
-
-    return TRUE; 
-  }
   return FALSE;
 }
 
@@ -116,13 +76,12 @@ ludilKernelAddCString (ludilEnv_t      *p_env,
 /* ------------------------------------------------------------ */
 static ludilBool_t
 callSymbol (void        *p_handler,
-            const char  *p_pluginName,
+            char        *p_pluginName,
             const char  *p_routine)
 /* ------------------------------------------------------------ */
 {
   char               v_symbolStr [256];
   void             (*v_cb)(void) = NULL;
-
 
   /* we got a handler ... init the plugin */
   snprintf (v_symbolStr,
@@ -140,7 +99,6 @@ callSymbol (void        *p_handler,
   }
   else
   {
-    puts ("no symbol found");
     return FALSE;
   }
 }
@@ -148,7 +106,7 @@ callSymbol (void        *p_handler,
 /* ------------------------------------------------------------ */
 ludilPlugin_t *
 ludilKernelPluginLoad (ludilEnv_t       *p_env,
-                       const char       *p_pluginName)
+                       char             *p_pluginName)
 /* ------------------------------------------------------------ */
 {
   ludilPlugin_t     *v_plugin = NULL;
@@ -193,8 +151,8 @@ ludilKernelPluginLoad (ludilEnv_t       *p_env,
       p_env->pluginList = ludilBlobAlloc (p_env->pluginList, sizeof (ludilPlugin_t)+sizeof(void *));
 
       v_plugin->name = ludilBlobHere (p_env->heap);
-      v_plugin->externCtx.length = sizeof (void *);
-      v_plugin->externCtx.size = (sizeof (void *) + sizeof (ludilBlob_t)); 
+      v_plugin->externCtx.length = sizeof (v_handler);
+      v_plugin->externCtx.size = (sizeof (v_handler) + sizeof (ludilBlob_t)); 
       memcpy (&v_plugin->externCtx.data, &v_handler, sizeof (v_handler));
 
       p_env->heap = ludilBlobAdd (p_env->heap, (ludilPtr_t)p_pluginName, strlen (p_pluginName)+1); 
@@ -206,7 +164,6 @@ ludilKernelPluginLoad (ludilEnv_t       *p_env,
       {
         p_env->pluginList->length -= sizeof (ludilPlugin_t);
         v_plugin = NULL;
-        puts ("no symbol found");
       }
     }
   }
@@ -214,13 +171,119 @@ ludilKernelPluginLoad (ludilEnv_t       *p_env,
 }
 
 /* ------------------------------------------------------------ */
-ludilBool_t
-ludilKernelPluginsClose (ludilEnv_t       *p_env)
+static ludilBool_t
+ludilKernelPluginsCall (ludilEnv_t       *p_env,
+                        const char       *p_routine)
 /* ------------------------------------------------------------ */
 {
-  if (p_env)
+  ludilPlugin_t     *v_plugin  = NULL;
+  ludilSize_t        v_size    = 0, v_i;
+  void              *v_handler = NULL;
+  char               v_pluginName [20];  
+
+  if (p_env && p_routine)
   {
-     
+     v_size = (p_env->pluginList->length)/(sizeof (ludilPlugin_t));
+     v_plugin = (ludilPlugin_t *)(p_env->pluginList->data); 
+
+     for (v_i = 0; v_i < v_size; v_i++)
+     {
+       if (sizeof (v_handler) == v_plugin[v_i].externCtx.length)
+         memcpy (&v_handler, &(v_plugin[v_i].externCtx.data), v_plugin[v_i].externCtx.length);
+
+       if (v_handler && v_plugin[v_i].name && (strlen (v_plugin[v_i].name) > 0))
+       {
+         if (callSymbol (v_handler, 
+                         v_plugin->name,
+                         p_routine))
+         {
+          printf  ("[INFO] Called routine %s of plugin %s\n", p_routine , v_plugin[v_i].name);
+         }
+         else
+         {
+          printf  ("[INFO] Couldn't call routine %s of plugin %s\n", p_routine, v_plugin[v_i].name);
+         }
+       }
+     }
+     if (v_i == v_size)
+       return TRUE;
   }
+  return FALSE;
+}
+
+/* ------------------------------------------------------------ */
+ludilBool_t 
+ludilKernelStart (ludilEnv_t       *p_env)
+/* ------------------------------------------------------------ */
+{
+  if (p_env && (p_env->started == FALSE))
+  {
+    if (TRUE == ludilKernelPluginsCall (p_env, "Start"))
+    {
+      p_env->started = TRUE;
+      printf  ("[INFO] Kernel started");
+      return TRUE; 
+    }
+  }
+  return FALSE;
+}
+
+/* ------------------------------------------------------------ */
+ludilBool_t 
+ludilKernelStop (ludilEnv_t       *p_env)
+/* ------------------------------------------------------------ */
+{
+  if (p_env && (p_env->started == TRUE))
+  {
+    if (TRUE == ludilKernelPluginsCall (p_env, "Stop"))
+    {
+      p_env->started = FALSE;
+      return TRUE; 
+    }
+  }
+  return FALSE;
+}
+
+/* ------------------------------------------------------------ */
+ludilBool_t 
+ludilKernelFree (ludilEnv_t      **p_env)
+/* ------------------------------------------------------------ */
+{
+  ludilPlugin_t     *v_plugin  = NULL;
+  ludilSize_t        v_size    = 0, v_i;
+  void              *v_handler = NULL;
+
+  if (p_env && (*p_env))
+  {
+    if ((*p_env)->started == TRUE)
+    {
+      ludilKernelStop (*p_env);
+    }
+
+    /* free resources of each plugin, then close the plugin itself */
+    ludilKernelPluginsCall (*p_env, "Free");
+
+    /* close the plugins */
+    v_size = ((*p_env)->pluginList->length)/(sizeof (ludilPlugin_t));
+    v_plugin = (ludilPlugin_t *)&((*p_env)->pluginList->data); 
+
+    for (v_i = 0; v_i < v_size; v_i++)
+    {
+      if (sizeof (v_handler) == v_plugin[v_i].externCtx.length)
+        memcpy (&v_handler, &(v_plugin[v_i].externCtx.data), v_plugin[v_i].externCtx.length);
+
+      if (v_handler && (v_plugin[v_i].name) && (strlen (v_plugin[v_i].name) > 0))
+      {
+        printf  ("[INFO] Closing plugin %s\n", v_plugin[v_i].name); 
+        dlclose (v_handler);
+      }
+    }
+
+    ludilBlobFree (&(*p_env)->heap);
+    ludilBlobFree (&(*p_env)->pluginList);
+  }
+DONE:
+  return TRUE;
+EXIT:
   return FALSE;
 }
