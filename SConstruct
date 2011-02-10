@@ -46,7 +46,7 @@ else:
 
 env = Environment (LIBPATH=[project_lib], 
                    CPPPATH=project_inc,
-                   LIBS='dl',
+                   LIBS=['dl', 'pthread'],
                    CFLAGS=cflags,
                    tools = ["default", "doxygen"], 
                    toolpath = '.')

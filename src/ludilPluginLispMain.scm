@@ -24,7 +24,13 @@ ludilPluginLispStart ()
 {
   g_run = 1;
 
-  while (g_run)
+}
+
+/* ------------------------------------------------------------ */
+void 
+ludilPluginLispNextStep ()
+/* ------------------------------------------------------------ */
+{
     g_word = CHICKEN_continue (g_word);
 }
 

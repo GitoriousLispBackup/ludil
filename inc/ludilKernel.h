@@ -2,6 +2,7 @@
 #define LUDIL_KERNEL_H
 
 #include <ludilTypes.h>
+#include <pthread.h>
 
 /* ------------------------------------------------------------ */
 /** @file ludilKernel.h
@@ -37,10 +38,11 @@ typedef struct
 /* ------------------------------------------------------------ */
 typedef struct
 {
-  ludilBlob_t       *pluginList; /**< list of associated plugins */
-  ludilBool_t        started;    /**< true if env was started */
-  ludilBlob_t       *heap;       /**< heap, where data objects are stored */
-  ludilString_t     *infoString; /**< returns the info string */
+  ludilBlob_t       *pluginList;     /**< list of associated plugins */
+  ludilBool_t        started;        /**< true if env was started */
+  ludilBlob_t       *heap;           /**< heap, where data objects are stored */
+  ludilString_t     *infoString;     /**< returns the info string */
+  pthread_t          kernelThread;   /**< kernel thread of main loop */
 
 } ludilEnv_t;
 

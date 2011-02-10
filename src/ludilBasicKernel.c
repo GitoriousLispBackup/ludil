@@ -5,6 +5,8 @@
 #include <ludilBlob.h>
 #include <string.h>
 #include <stdio.h>
+#include <stdarg.h>
+#include <pthread.h>
 
 #define LUDIL_KERNEL_PLUGINS 10
 #define LUDIL_KERNEL_HEAP_SIZE 1024
@@ -15,6 +17,35 @@
 #define LUDIL_PLUGIN_FILE_PREFIX "lib"LUDIL_PLUGIN_PREFIX
 #define LUDIL_PLUGIN_FILE_SUFFIX LUDIL_PLUGIN_SUFFIX".so" 
 
+typedef enum
+{
+  INFO
+} ludilKernelEvent_t;
+
+/* ------------------------------------------------------------ */
+static ludilBool_t
+ludilKernelEvent (ludilKernelEvent_t p_event, const char *p_fmt, ...)
+/* ------------------------------------------------------------ */
+{
+  char          v_buffer [256];
+  va_list       v_ap;
+  char          v_infoStr [] = "\e[32m[INFO]\e[0m ";
+
+  /* initializing */
+  v_buffer [0] = '\0';
+
+  va_start (v_ap, p_fmt);
+
+  if (p_event == INFO)
+  {
+    vsnprintf (v_buffer, sizeof (v_buffer), p_fmt, v_ap);
+    printf ("%s%s\n", v_infoStr, v_buffer);
+  }
+
+  va_end (v_ap);
+
+  return TRUE;
+}
 
 /* ------------------------------------------------------------ */
 ludilBool_t 
@@ -40,6 +71,8 @@ ludilKernelInit (ludilEnv_t      **p_env)
 
     /* load the lisp plugin */
     v_pluginPtr = ludilKernelPluginLoad ((*p_env), "Lisp");
+
+    ludilKernelEvent (INFO, "Initialized kernel");
   }
 DONE:
   return TRUE;
@@ -197,11 +230,15 @@ ludilKernelPluginsCall (ludilEnv_t       *p_env,
                          v_plugin->name,
                          p_routine))
          {
-          printf  ("[INFO] Called routine %s of plugin %s\n", p_routine , v_plugin[v_i].name);
+          ludilKernelEvent (INFO, "Called routine '%s' of plugin '%s'", 
+                                   p_routine , 
+                                   v_plugin[v_i].name);
          }
          else
          {
-          printf  ("[INFO] Couldn't call routine %s of plugin %s\n", p_routine, v_plugin[v_i].name);
+          ludilKernelEvent (INFO, "Couldn't call routine '%s' of plugin '%s'", 
+                                  p_routine, 
+                                  v_plugin[v_i].name);
          }
        }
      }
@@ -212,17 +249,56 @@ ludilKernelPluginsCall (ludilEnv_t       *p_env,
 }
 
 /* ------------------------------------------------------------ */
+static ludilBool_t 
+ludilKernelMainLoop (ludilEnv_t       *p_env)
+/* ------------------------------------------------------------ */
+{
+  if (p_env && (p_env->started == TRUE))
+  {
+    /* calling the NextStep routine of each plugin */
+    if (TRUE == ludilKernelPluginsCall (p_env, "NextStep"))
+      return TRUE; 
+  }
+  return FALSE;
+}
+
+/* ------------------------------------------------------------ */
+static void *
+ludilKernelMainLoopThread (void *p_dataPtr)
+/* ------------------------------------------------------------ */
+{
+  ludilBool_t       v_run = TRUE;
+  ludilEnv_t       *v_env = (ludilEnv_t *)p_dataPtr; 
+
+  while (v_run == TRUE)
+  {
+    v_run = ludilKernelMainLoop (v_env);
+  }
+  return NULL;
+}
+
+/* ------------------------------------------------------------ */
 ludilBool_t 
 ludilKernelStart (ludilEnv_t       *p_env)
 /* ------------------------------------------------------------ */
 {
+  ludilEnv_t      *v_env = NULL;
+
   if (p_env && (p_env->started == FALSE))
   {
     if (TRUE == ludilKernelPluginsCall (p_env, "Start"))
     {
       p_env->started = TRUE;
-      printf  ("[INFO] Kernel started");
-      return TRUE; 
+      ludilKernelEvent (INFO, "Kernel started");
+
+      /* actually it should get it's own copy */
+      v_env = p_env;
+      
+      if (pthread_create (&(p_env->kernelThread),
+                          NULL,
+                          &ludilKernelMainLoopThread,
+                          v_env) == 0)
+        return TRUE; 
     }
   }
   return FALSE;
@@ -235,10 +311,15 @@ ludilKernelStop (ludilEnv_t       *p_env)
 {
   if (p_env && (p_env->started == TRUE))
   {
-    if (TRUE == ludilKernelPluginsCall (p_env, "Stop"))
+    /* stop main loop thread */
+    if (pthread_cancel (p_env->kernelThread) == 0)
     {
-      p_env->started = FALSE;
-      return TRUE; 
+      if (TRUE == ludilKernelPluginsCall (p_env, "Stop"))
+      {
+        ludilKernelEvent (INFO, "Kernel stopped");
+        p_env->started = FALSE;
+        return TRUE; 
+      }
     }
   }
   return FALSE;
@@ -274,7 +355,7 @@ ludilKernelFree (ludilEnv_t      **p_env)
 
       if (v_handler && (v_plugin[v_i].name) && (strlen (v_plugin[v_i].name) > 0))
       {
-        printf  ("[INFO] Closing plugin %s\n", v_plugin[v_i].name); 
+        ludilKernelEvent (INFO, "Freeing plugin '%s'\n", v_plugin[v_i].name); 
         dlclose (v_handler);
       }
     }
@@ -287,3 +368,4 @@ DONE:
 EXIT:
   return FALSE;
 }
+
