@@ -312,7 +312,10 @@ ludilKernelStop (ludilEnv_t       *p_env)
   if (p_env && (p_env->started == TRUE))
   {
     /* stop main loop thread */
-    if (pthread_cancel (p_env->kernelThread) == 0)
+    pthread_cancel (p_env->kernelThread);
+
+    /* sync with KernelThread */
+    if (pthread_join (p_env->kernelThread, NULL) == 0)
     {
       if (TRUE == ludilKernelPluginsCall (p_env, "Stop"))
       {
