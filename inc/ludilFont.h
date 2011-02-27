@@ -18,39 +18,60 @@
  */
 /* ------------------------------------------------------------ */
 
-#include <ludilMemory.h>
+#ifndef LUDIL_FONT_H
+#define LUDIL_FONT_H
+
 #include <ludilTypes.h>
-#include <stdlib.h>
-#include <string.h>
-
-/* macros */
-#define LUDIL_FREE(ptr_ptr) if (*ptr_ptr) { free((void *)*ptr_ptr); *ptr_ptr = NULL; }
-#define LUDIL_ALLOC(var,size) var = (typeof (var))malloc(size);
+#include <ludilString.h>
 
 /* ------------------------------------------------------------ */
-ludilPtr_t 
-ludilAlloc (ludilSize_t p_size)
+/**
+ *
+ */
 /* ------------------------------------------------------------ */
+typedef enum
 {
-  ludilPtr_t v_dataPtr = NULL;
+  BOLD,
+  ITALIC,
+  UNDERLINE,
+  STRIKETHROUGH
+} ludilFontStyle_t;
 
-  LUDIL_ALLOC (v_dataPtr, p_size);
-
-  if (v_dataPtr)
-  {
-    memset (v_dataPtr, 0, p_size);
-    return v_dataPtr;
-  }
-  return LUDIL_PTR_NULL;
-}
 
 /* ------------------------------------------------------------ */
-void 
-ludilFree (ludilPtr_t *p_dataPtr)
+/**
+ *
+ */
 /* ------------------------------------------------------------ */
+typedef struct 
 {
-  if (p_dataPtr)
-  {
-    LUDIL_FREE (p_dataPtr);
-  }
-}
+  ludilFontStyle_t  style; /**< the style of the font */
+
+} ludilFont_t;
+
+/* ------------------------------------------------------------ */
+/**
+ *  Opens a font
+ *
+ *  @param p_fontPtr        @b [In] pointer to font structure
+ *  @param p_path           @b [In] path to a font file
+ */
+/* ------------------------------------------------------------ */
+ludilFont_t *
+ludilFontOpen (ludilFont_t *p_fontPtr, 
+               ludilPath_t  p_path);
+/* ------------------------------------------------------------ */
+
+
+/* ------------------------------------------------------------ */
+/**
+ *  Closes a font
+ *
+ *  @param p_fontPtr        @b [In] pointer to font structure
+ */
+/* ------------------------------------------------------------ */
+void
+ludilFontClose (ludilFont_t *p_fontPtr);
+/* ------------------------------------------------------------ */
+
+#endif

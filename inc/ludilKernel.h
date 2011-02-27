@@ -1,3 +1,23 @@
+/* ------------------------------------------------------------ */
+/*
+ *   Ludil - Scheme/C game programming framework
+ *   Copyright (C) 2010,2011 Josef P. Bernhart <bernhartjp@yahoo.de>
+ *
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
+ *   any later version.
+ *
+ *   This program is distributed in the hope that it will be useful,
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *   GNU General Public License for more details.
+ *
+ *   You should have received a copy of the GNU General Public License
+ *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+/* ------------------------------------------------------------ */
+
 #ifndef LUDIL_KERNEL_H
 #define LUDIL_KERNEL_H
 
@@ -15,6 +35,7 @@
  */
 /* ------------------------------------------------------------ */
 
+typedef void (*ludilPluginHandlerCB_t)(ludilPtr_t);
 /* ------------------------------------------------------------ */
 /** @brief plugin handle
  * 
@@ -27,7 +48,33 @@ typedef struct
   char            *name;      /**< name of the plugin */
   ludilBlob_t      externCtx; /**< extern context, for the loaded plugin */
   ludilBool_t      started;   /**< is true, if plugin was started */
+
+  ludilPluginHandlerCB_t  initCB;
+  ludilPluginHandlerCB_t  startCB;
+  ludilPluginHandlerCB_t  stopCB;
+  ludilPluginHandlerCB_t  stepCB;
+  ludilPluginHandlerCB_t  freeCB;
+  
 } ludilPlugin_t;
+
+typedef enum 
+{
+  PLUGIN,
+  MAIN,
+  MESSAGE
+} ludilKernelThreadType_t;
+
+typedef struct 
+{
+  pthread_t                     thread;      /**< internal thread */
+  ludilId_t                     id;          /**< id of thread */
+  char                          name [256];  /**< name of thread */
+  ludilKernelThreadType_t       type;        /**< type of thread */
+  ludilBlob_t                  *input;       /**< input buffer of thread */
+  ludilBlob_t                  *output;      /**< output buffer of thread */
+  ludilBlob_t                  *heap;        /**< thread heap */
+
+} ludilKernelThread_t;
 
 /* ------------------------------------------------------------ */
 /** @brief ludil toplevel environment
@@ -42,7 +89,8 @@ typedef struct
   ludilBool_t        started;        /**< true if env was started */
   ludilBlob_t       *heap;           /**< heap, where data objects are stored */
   ludilString_t     *infoString;     /**< returns the info string */
-  pthread_t          kernelThread;   /**< kernel thread of main loop */
+
+  pthread_t          mainThread;     /**< the kernel main loop */
 
 } ludilEnv_t;
 
@@ -95,6 +143,10 @@ ludilKernelStop (ludilEnv_t       *p_env);
 /** @brief loads a plugin
  * 
  *  This procedure loads a ludil plugin
+ *  @param    p_evn          [In] environment 
+ *  @param    p_pluginName   [In] name of plugin to load, without
+ *                                the library prefixes and suffixes
+ *                                eg. just 'Lisp' and not libludilPluginLisp.so
  */
 /* ------------------------------------------------------------ */
 ludilPlugin_t *
@@ -106,13 +158,14 @@ ludilKernelPluginLoad (ludilEnv_t       *p_env,
 /**
  *  Adds a string to the kernel 
  *
- *   @param         [In] environment
- *   @param         [In] C null terminated string, which should be saved in system 
+ *   @param   p_env      [In] environment
+ *   @param   p_string   [In] C null terminated string, which should be saved in system 
  */
 /* ------------------------------------------------------------ */
 ludilString_t *
 ludilKernelAddCString (ludilEnv_t      *p_env,
                        const char      *p_string);
 /* ------------------------------------------------------------ */
+
 
 #endif

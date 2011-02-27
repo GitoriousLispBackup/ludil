@@ -1,3 +1,23 @@
+/* ------------------------------------------------------------ */
+/*
+ *   Ludil - Scheme/C game programming framework
+ *   Copyright (C) 2010,2011 Josef P. Bernhart <bernhartjp@yahoo.de>
+ *
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
+ *   any later version.
+ *
+ *   This program is distributed in the hope that it will be useful,
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *   GNU General Public License for more details.
+ *
+ *   You should have received a copy of the GNU General Public License
+ *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+/* ------------------------------------------------------------ */
+
 #include <ludilBlob.h>
 #include <stdlib.h>
 #include <string.h>
@@ -91,3 +111,25 @@ ludilBlobAdd (ludilBlob_t    *p_blob,
   return v_blob;
 }
 
+/* ------------------------------------------------------------ */
+ludilSize_t
+ludilBlobFreeSpace (ludilBlob_t *p_blob)
+/* ------------------------------------------------------------ */
+{
+  if (p_blob && (p_blob->size > sizeof (ludilBlob_t)))
+    return ((p_blob->size-sizeof (ludilBlob_t))-p_blob->length);
+
+  return 0;
+}
+
+/* ------------------------------------------------------------ */
+ludilBool_t
+ludilBlobFits (ludilBlob_t *p_blob,
+               ludilSize_t  p_size)
+/* ------------------------------------------------------------ */
+{
+  if ((p_blob) && (p_size > 0))
+    if (ludilBlobFreeSpace (p_blob) >= p_size)
+      return TRUE;
+  return FALSE;
+}

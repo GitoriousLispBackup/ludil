@@ -18,50 +18,48 @@
  */
 /* ------------------------------------------------------------ */
 
-#ifndef LUDIL_STRING_H
-#define LUDIL_STRING_H
+#ifndef LUDIL_EVENT_H
+#define LUDIL_EVENT_H
 
 #include <ludilTypes.h>
 
 /* ------------------------------------------------------------ */
-/** @file ludilTypes.h
- *  @author Josef P. Bernhart 
+/** @file ludilEvent.h 
+ *  @author Josef P. Bernhart
+ *  @date 31-01-2011
+ *  @ingroup base
  *
- *  Is a the main types definitions file, will be modularized
- *  in later releases
+ *  Event procedures
+ */
+/* ------------------------------------------------------------ */
+typedef enum
+{
+  EXCEPTION,      /**< is a special signal for unexpected situations, which need to be fixed by the system  */
+  ERROR,          /**< is a special signal, which causes the exiting of the application,
+                       to handle a situation, which couldn't be handled by the exception handler */
+  SIGNAL          /**< is used for signals, which were raised,
+                       signals are special events, for triggering some kind of action */
+} ludilEventGroup_t;
+
+/* ------------------------------------------------------------ */
+/** @brief event type
+ *
+ */
+/* ------------------------------------------------------------ */
+typedef struct
+{
+  ludilEventGroup_t     group;      /**< event group of event */
+  ludilId_t             eventId;    /**< id of event, an 'unique' identifier for each event */
+  ludilRef_t            ref;        /**< reference to additional data */
+} ludilEvent_t;
+
+/* ------------------------------------------------------------ */
+/** @brief event queue type
+ * 
  */
 /* ------------------------------------------------------------ */
 
 /* ------------------------------------------------------------ */
-/** ludilStringAlloc
- *
- * Allocates a string of the given length in characters
- *
- * @param p_length           @b [In] length of allocated string
- *
- * @return
- * allocated string
- */
 /* ------------------------------------------------------------ */
-ludilString_t *
-ludilStringAlloc (ludilSize_t p_length);
-/* ------------------------------------------------------------ */
-
-/* ------------------------------------------------------------ */
-/** ludilStringNew
- *
- * Creates a new ludil string from a given constant c string
- *
- * @param p_string           @b [In] c string, from which 
- *                                   a ludil version is generated
- *
- * @return
- * pointer to allocated string
- */
-/* ------------------------------------------------------------ */
-ludilString_t *
-ludilStringNew (const char *p_string);
-/* ------------------------------------------------------------ */
-
 
 #endif

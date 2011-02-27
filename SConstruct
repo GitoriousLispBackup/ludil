@@ -1,10 +1,28 @@
 # -----------------------------------------------------------
+#   Ludil - Scheme/C game programming framework
+#   Copyright (C) 2010,2011 Josef P. Bernhart <bernhartjp@yahoo.de>
+#
+#   This program is free software: you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation, either version 3 of the License, or
+#   (at your option) any later version.
+#
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+#
+#   You should have received a copy of the GNU General Public License
+#   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+# -----------------------------------------------------------
+
+# -----------------------------------------------------------
 # Ludil construction file
 # -----------------------------------------------------------
 # Author: Josef P. Bernhart
 # Date:   28-12-2010
 # -----------------------------------------------------------
-
 
 # -----------------------------------------------------------
 # general settings
@@ -31,15 +49,33 @@ project_config = '#/'
 # -----------------------------------------------------------
 # ...
 
+
+# -----------------------------------------------------------
+# output functions
+# -----------------------------------------------------------
+def printSection(text):
+  print "-----------------------------------------------------------"
+  print 'Building '+text
+  print "-----------------------------------------------------------"
+
+def printOption(text):
+  print "-----------------------------------------------------------"
+  print text+" (Option) was set"
+  print "-----------------------------------------------------------"
+# -----------------------------------------------------------
+
 # -----------------------------------------------------------
 # general environment settings
 # -----------------------------------------------------------
 debug_flags = '-g -ggdb'
 
 # value = ARGUMENTS.get('DEBUG', 'false')
-value = 'true'
+#if 'debug' in COMMAND_LINE_TARGETS: 
+value = True
+#  printOption ("debugging")
 
-if value == 'true':
+
+if value:
   cflags = debug_flags
 else:
   cflags = ''
@@ -50,14 +86,11 @@ env = Environment (LIBPATH=[project_lib],
                    CFLAGS=cflags,
                    tools = ["default", "doxygen"], 
                    toolpath = '.')
+# -----------------------------------------------------------
 
 # -----------------------------------------------------------
 # functions and settings
 # -----------------------------------------------------------
-def PrintSection(text):
-  print "-----------------------------------------------------------"
-  print 'Building '+text
-  print "-----------------------------------------------------------"
 
 def Srcify(lst):
   return map ((lambda x: project_src+x),lst)
@@ -93,7 +126,7 @@ def pluginLibrary(pluginName, files):
 # -----------------------------------------------------------
 # constructing the base library
 # -----------------------------------------------------------
-PrintSection ('basic functionality library')
+printSection ('basic functionality library')
 libbasic_name = 'Basic'
 libbasic_files = ['Memory.c',
                   'Io.c',
@@ -108,7 +141,7 @@ moduleLibrary (libbasic_name, libbasic_files)
 # -----------------------------------------------------------
 # libbasic test programs
 # -----------------------------------------------------------
-PrintSection ('testprograms for the basic functionality library')
+printSection ('testprograms for the basic functionality library')
 libraryTest (libbasic_name, 'MemoryTest')
 libraryTest (libbasic_name, 'IoTest')
 libraryTest (libbasic_name, 'PointTest')
@@ -118,14 +151,14 @@ libraryTest (libbasic_name, 'KernelTest')
 
 # create the plugin test library, so the library for testing
 # the plugin subsystem
-PrintSection ('plugins')
+printSection ('plugins')
 pluginLibrary ('Test', [])
 # -----------------------------------------------------------
 
 # -----------------------------------------------------------
 # constructing the image library
 # -----------------------------------------------------------
-PrintSection ('image format handling library')
+printSection ('image format handling library')
 libimage_name = 'Image'
 libimage_files = ['PNG.c'] 
 moduleLibrary (libimage_name, libimage_files)
@@ -155,4 +188,6 @@ env.SharedLibrary (Libify([PFile(libshell_name)]), libshell_src)
 # -----------------------------------------------------------
 # documentation
 # -----------------------------------------------------------
+# ( generating files with doxygen? ), but well how in 
+# the name of doxygen
 # -----------------------------------------------------------

@@ -1,8 +1,29 @@
+/* ------------------------------------------------------------ */
+/*
+ *   Ludil - Scheme/C game programming framework
+ *   Copyright (C) 2010,2011 Josef P. Bernhart <bernhartjp@yahoo.de>
+ *
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
+ *   any later version.
+ *
+ *   This program is distributed in the hope that it will be useful,
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *   GNU General Public License for more details.
+ *
+ *   You should have received a copy of the GNU General Public License
+ *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+/* ------------------------------------------------------------ */
+
 #include <ludilKernel.h>
 #include <ludilTypes.h>
+#include <ludilBlob.h>
+
 #include <dlfcn.h>
 #include <stdlib.h>
-#include <ludilBlob.h>
 #include <string.h>
 #include <stdio.h>
 #include <stdarg.h>
@@ -17,10 +38,12 @@
 #define LUDIL_PLUGIN_FILE_PREFIX "lib"LUDIL_PLUGIN_PREFIX
 #define LUDIL_PLUGIN_FILE_SUFFIX LUDIL_PLUGIN_SUFFIX".so" 
 
+/* ------------------------------------------------------------ */
 typedef enum
 {
   INFO
 } ludilKernelEvent_t;
+/* ------------------------------------------------------------ */
 
 /* ------------------------------------------------------------ */
 static ludilBool_t
@@ -107,14 +130,14 @@ ludilKernelAddCString (ludilEnv_t      *p_env,
 }
 
 /* ------------------------------------------------------------ */
-static ludilBool_t
-callSymbol (void        *p_handler,
+ludilPluginHandlerCB_t
+findSymbol (void        *p_handler,
             char        *p_pluginName,
             const char  *p_routine)
 /* ------------------------------------------------------------ */
 {
-  char               v_symbolStr [256];
-  void             (*v_cb)(void) = NULL;
+  char                        v_symbolStr [256];
+  ludilPluginHandlerCB_t      v_cb = NULL;
 
   /* we got a handler ... init the plugin */
   snprintf (v_symbolStr,
@@ -125,15 +148,8 @@ callSymbol (void        *p_handler,
             p_routine);
 
   v_cb = dlsym (p_handler,  v_symbolStr);
-  if (v_cb)
-  {
-    v_cb ();
-    return TRUE;
-  }
-  else
-  {
-    return FALSE;
-  }
+
+  return v_cb;
 }
 
 /* ------------------------------------------------------------ */
@@ -148,6 +164,11 @@ ludilKernelPluginLoad (ludilEnv_t       *p_env,
   ludilPlugin_t      v_buf;
 
   char               v_initStr [] = "Init";   
+  char               v_startStr [] = "Start";
+  char               v_stepStr [] = "NextStep";
+  char               v_freeStr [] = "Free";
+  char               v_stopStr [] = "Stop";
+
   char               v_symbolStr [256];
 
   v_symbolStr [0] = '\0';
@@ -191,13 +212,35 @@ ludilKernelPluginLoad (ludilEnv_t       *p_env,
       p_env->heap = ludilBlobAdd (p_env->heap, (ludilPtr_t)p_pluginName, strlen (p_pluginName)+1); 
 
       /* we got a handler ... init the plugin */
-      if (!callSymbol (v_handler, 
-                       p_pluginName,
-                       v_initStr))
+      if ((v_plugin->initCB = findSymbol (v_handler, 
+                                          p_pluginName,
+                                          v_initStr)) == NULL)
       {
         p_env->pluginList->length -= sizeof (ludilPlugin_t);
         v_plugin = NULL;
       }
+      else
+      {
+        v_plugin->initCB (NULL);
+        v_plugin->startCB = NULL;
+        v_plugin->stopCB = NULL;
+        v_plugin->stepCB = NULL;
+        v_plugin->freeCB = NULL;
+
+        v_plugin->startCB = findSymbol (v_handler, 
+                                        p_pluginName,
+                                        v_startStr);
+        v_plugin->stopCB = findSymbol (v_handler, 
+                                       p_pluginName,
+                                       v_stopStr);
+        v_plugin->stepCB = findSymbol (v_handler, 
+                                       p_pluginName,
+                                       v_stepStr);
+        v_plugin->freeCB = findSymbol (v_handler, 
+                                       p_pluginName,
+                                       v_freeStr);
+      }
+
     }
   }
   return v_plugin; 
@@ -205,47 +248,135 @@ ludilKernelPluginLoad (ludilEnv_t       *p_env,
 
 /* ------------------------------------------------------------ */
 static ludilBool_t
-ludilKernelPluginsCall (ludilEnv_t       *p_env,
-                        const char       *p_routine)
+ludilKernelPluginsCallStart (ludilEnv_t       *p_env)
 /* ------------------------------------------------------------ */
 {
   ludilPlugin_t     *v_plugin  = NULL;
   ludilSize_t        v_size    = 0, v_i;
-  void              *v_handler = NULL;
-  char               v_pluginName [20];  
 
-  if (p_env && p_routine)
+  if (p_env)
   {
      v_size = (p_env->pluginList->length)/(sizeof (ludilPlugin_t));
      v_plugin = (ludilPlugin_t *)(p_env->pluginList->data); 
 
      for (v_i = 0; v_i < v_size; v_i++)
      {
-       if (sizeof (v_handler) == v_plugin[v_i].externCtx.length)
-         memcpy (&v_handler, &(v_plugin[v_i].externCtx.data), v_plugin[v_i].externCtx.length);
-
-       if (v_handler && v_plugin[v_i].name && (strlen (v_plugin[v_i].name) > 0))
+       if (v_plugin[v_i].name && (strlen (v_plugin[v_i].name) > 0))
        {
-         if (callSymbol (v_handler, 
-                         v_plugin->name,
-                         p_routine))
+         if (v_plugin [v_i].startCB) 
          {
-          ludilKernelEvent (INFO, "Called routine '%s' of plugin '%s'", 
-                                   p_routine , 
+          v_plugin [v_i].startCB (NULL);
+          ludilKernelEvent (INFO, "Called routine Start of plugin '%s'", 
                                    v_plugin[v_i].name);
          }
          else
          {
-          ludilKernelEvent (INFO, "Couldn't call routine '%s' of plugin '%s'", 
-                                  p_routine, 
+          ludilKernelEvent (INFO, "Couldn't call Start routine of plugin '%s'", 
                                   v_plugin[v_i].name);
          }
        }
      }
-     if (v_i == v_size)
-       return TRUE;
   }
-  return FALSE;
+  return TRUE;
+}
+/* ------------------------------------------------------------ */
+static ludilBool_t
+ludilKernelPluginsCallStop (ludilEnv_t       *p_env)
+/* ------------------------------------------------------------ */
+{
+  ludilPlugin_t     *v_plugin  = NULL;
+  ludilSize_t        v_size    = 0, v_i;
+
+  if (p_env)
+  {
+     v_size = (p_env->pluginList->length)/(sizeof (ludilPlugin_t));
+     v_plugin = (ludilPlugin_t *)(p_env->pluginList->data); 
+
+     for (v_i = 0; v_i < v_size; v_i++)
+     {
+       if (v_plugin[v_i].name && (strlen (v_plugin[v_i].name) > 0))
+       {
+         if (v_plugin [v_i].stopCB) 
+         {
+          v_plugin [v_i].stopCB (NULL);
+          ludilKernelEvent (INFO, "Called routine Stop of plugin '%s'", 
+                                   v_plugin[v_i].name);
+         }
+         else
+         {
+          ludilKernelEvent (INFO, "Couldn't call Stop routine of plugin '%s'", 
+                                  v_plugin[v_i].name);
+         }
+       }
+     }
+  }
+  return TRUE;
+}
+/* ------------------------------------------------------------ */
+static ludilBool_t
+ludilKernelPluginsCallStep (ludilEnv_t       *p_env)
+/* ------------------------------------------------------------ */
+{
+  ludilPlugin_t     *v_plugin  = NULL;
+  ludilSize_t        v_size    = 0, v_i;
+
+  if (p_env)
+  {
+     v_size = (p_env->pluginList->length)/(sizeof (ludilPlugin_t));
+     v_plugin = (ludilPlugin_t *)(p_env->pluginList->data); 
+
+     for (v_i = 0; v_i < v_size; v_i++)
+     {
+       if (v_plugin[v_i].name && (strlen (v_plugin[v_i].name) > 0))
+       {
+         if (v_plugin [v_i].stepCB) 
+         {
+          v_plugin [v_i].stepCB (NULL);
+          ludilKernelEvent (INFO, "Called routine NextStep of plugin '%s'", 
+                                   v_plugin[v_i].name);
+         }
+         else
+         {
+          ludilKernelEvent (INFO, "Couldn't call NextStep routine of plugin '%s'", 
+                                  v_plugin[v_i].name);
+         }
+       }
+     }
+  }
+  return TRUE;
+}
+/* ------------------------------------------------------------ */
+static ludilBool_t
+ludilKernelPluginsCallFree (ludilEnv_t       *p_env)
+/* ------------------------------------------------------------ */
+{
+  ludilPlugin_t     *v_plugin  = NULL;
+  ludilSize_t        v_size    = 0, v_i;
+
+  if (p_env)
+  {
+     v_size = (p_env->pluginList->length)/(sizeof (ludilPlugin_t));
+     v_plugin = (ludilPlugin_t *)(p_env->pluginList->data); 
+
+     for (v_i = 0; v_i < v_size; v_i++)
+     {
+       if (v_plugin[v_i].name && (strlen (v_plugin[v_i].name) > 0))
+       {
+         if (v_plugin [v_i].freeCB) 
+         {
+          v_plugin [v_i].freeCB (NULL);
+          ludilKernelEvent (INFO, "Called routine Free of plugin '%s'", 
+                                   v_plugin[v_i].name);
+         }
+         else
+         {
+          ludilKernelEvent (INFO, "Couldn't call Free routine of plugin '%s'", 
+                                  v_plugin[v_i].name);
+         }
+       }
+     }
+  }
+  return TRUE;
 }
 
 /* ------------------------------------------------------------ */
@@ -256,7 +387,7 @@ ludilKernelMainLoop (ludilEnv_t       *p_env)
   if (p_env && (p_env->started == TRUE))
   {
     /* calling the NextStep routine of each plugin */
-    if (TRUE == ludilKernelPluginsCall (p_env, "NextStep"))
+    if (TRUE == ludilKernelPluginsCallStep (p_env))
       return TRUE; 
   }
   return FALSE;
@@ -286,7 +417,7 @@ ludilKernelStart (ludilEnv_t       *p_env)
 
   if (p_env && (p_env->started == FALSE))
   {
-    if (TRUE == ludilKernelPluginsCall (p_env, "Start"))
+    if (TRUE == ludilKernelPluginsCallStart (p_env))
     {
       p_env->started = TRUE;
       ludilKernelEvent (INFO, "Kernel started");
@@ -294,7 +425,7 @@ ludilKernelStart (ludilEnv_t       *p_env)
       /* actually it should get it's own copy */
       v_env = p_env;
       
-      if (pthread_create (&(p_env->kernelThread),
+      if (pthread_create (&(p_env->mainThread),
                           NULL,
                           &ludilKernelMainLoopThread,
                           v_env) == 0)
@@ -312,12 +443,12 @@ ludilKernelStop (ludilEnv_t       *p_env)
   if (p_env && (p_env->started == TRUE))
   {
     /* stop main loop thread */
-    pthread_cancel (p_env->kernelThread);
+    pthread_cancel (p_env->mainThread);
 
     /* sync with KernelThread */
-    if (pthread_join (p_env->kernelThread, NULL) == 0)
+    if (pthread_join (p_env->mainThread, NULL) == 0)
     {
-      if (TRUE == ludilKernelPluginsCall (p_env, "Stop"))
+      if (TRUE == ludilKernelPluginsCallStop (p_env))
       {
         ludilKernelEvent (INFO, "Kernel stopped");
         p_env->started = FALSE;
@@ -345,7 +476,7 @@ ludilKernelFree (ludilEnv_t      **p_env)
     }
 
     /* free resources of each plugin, then close the plugin itself */
-    ludilKernelPluginsCall (*p_env, "Free");
+    ludilKernelPluginsCallFree (*p_env);
 
     /* close the plugins */
     v_size = ((*p_env)->pluginList->length)/(sizeof (ludilPlugin_t));
@@ -371,4 +502,3 @@ DONE:
 EXIT:
   return FALSE;
 }
-
