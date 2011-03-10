@@ -1,0 +1,9 @@
+TODO
+
+Added to todo on 10-03-2011:
+* gettext support 
+* interface to graphics libraries
+* event handlers
+* unit testing with chicken scheme instead of some stuff, which uses a bunch of macros
+* modifying sfexpr library so that it is especially tailored towards ludil memory allocation,
+  so that there is a failback 'lisp' plugin for loading the config file
