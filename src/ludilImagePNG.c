@@ -22,9 +22,6 @@ ludilImageFromFile (ludilPath_t p_path)
 
   png_uint_32              v_width         = 0;
   png_uint_32              v_height        = 0;
-  png_uint_32              v_colorType     = 0;
-  png_uint_32              v_bitDepth      = 0;
-  png_uint_32              v_channels      = 0;
   png_uint_32              v_rowBytes      = 0;
 
   png_bytepp               v_rowPtr        = NULL;
@@ -85,9 +82,9 @@ ludilImageFromFile (ludilPath_t p_path)
     v_height = png_get_image_height (v_pngReadPtr, v_pngInfoPtr);
 
     /* get color information */
-    v_colorType = png_get_color_type (v_pngReadPtr, v_pngInfoPtr);
-    v_bitDepth  = png_get_bit_depth (v_pngReadPtr, v_pngInfoPtr);
-    v_channels = png_get_channels (v_pngReadPtr, v_pngInfoPtr);
+    png_get_color_type (v_pngReadPtr, v_pngInfoPtr);
+    png_get_bit_depth (v_pngReadPtr, v_pngInfoPtr);
+    png_get_channels (v_pngReadPtr, v_pngInfoPtr);
     v_rowBytes = png_get_rowbytes (v_pngReadPtr, v_pngInfoPtr);
 
     /* get rows */ 
@@ -123,7 +120,6 @@ ludilImageFromFile (ludilPath_t p_path)
                              &v_pngEndInfoPtr);
     fclose (v_filePtr);
   }
-DONE:
   return v_imagePtr;
 
 EXCEPTION:

@@ -20,6 +20,8 @@
 
 #include <ludilPoint.h>
 #include <ludilTypes.h>
+#include <ludilString.h>
+
 #include <stdio.h>
 #include <string.h>
 
@@ -102,12 +104,13 @@ ludilPointString (ludilPoint_t  *p_pointPtr,
     if (p_stringPtr)
       v_stringPtr = p_stringPtr;
     else
-      v_stringPtr = ((ludilString_t *)ludilStringAlloc (40));
+      v_stringPtr = (ludilString_t *)ludilStringAlloc ((ludilSize_t)40);
 
     if (!v_stringPtr)
       return NULL;
 
-    snprintf (v_stringPtr->data, v_stringPtr->size, 
+    snprintf (v_stringPtr->data, 
+              v_stringPtr->size, 
               "(ludilPoint x: %"PRI_L_OFFSET
               " y: %"PRI_L_OFFSET")", 
               p_pointPtr->x,

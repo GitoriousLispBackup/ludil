@@ -74,17 +74,18 @@ debug_flags = '-g -ggdb'
 value = True
 #  printOption ("debugging")
 
+default_flags = '-Wall -Werror'
 
 if value:
-  cflags = debug_flags
+  cflags = default_flags + " " + debug_flags
 else:
-  cflags = ''
+  cflags = default_flags
 
 env = Environment (LIBPATH=[project_lib], 
                    CPPPATH=project_inc,
                    LIBS=['dl', 'pthread'],
                    CFLAGS=cflags,
-                   tools = ["default", "doxygen"], 
+                   tools = ["default"], # "doxygen"], 
                    toolpath = '.')
 # -----------------------------------------------------------
 

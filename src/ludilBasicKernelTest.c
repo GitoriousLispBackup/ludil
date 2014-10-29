@@ -30,7 +30,7 @@ main ()
   ludilKernelInit (&v_env);
 
   v_plugin = ludilKernelPluginLoad (v_env, "Test");
-  printf ("v_plugin : %d\n", v_plugin);
+  printf ("v_plugin : %p\n", v_plugin);
 
   ludilKernelStart (v_env);
   ludilKernelStop (v_env);

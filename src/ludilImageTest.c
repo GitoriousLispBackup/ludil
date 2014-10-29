@@ -21,21 +21,24 @@ int
 main (int argc, char **argv) 
 /* ------------------------------------------------------------ */
 {
-  ludilImage_t *v_imagePtr = NULL;
-  ludilPath_t v_path = NULL;
+  /*ludilImage_t *v_imagePtr = NULL;*/
+  /*ludilPath_t v_path = NULL;*/
 
-  if (argc > 1)
-  {
-    printf ("file: %s\n", argv[1]);
-    v_imagePtr = ludilImageFromFile (argv[1]);
+  /*if (argc > 1)*/
+  /*{*/
+    /*printf ("file: %s\n", argv[1]);*/
+    /*v_imagePtr = ludilImageFromFile (argv[1]);*/
 
-    if (v_imagePtr)
-    {
-      printf ("(ludil:image width: %u heigth: %u pixel-size: %u)\n",
-              v_imagePtr->width, v_imagePtr->height, v_imagePtr->pixelSize);
-      ludilFree ((ludilPtr_t *)&v_imagePtr);
-    }
-  }
+    /*if (v_imagePtr)*/
+    /*{*/
+      /*printf ("(ludil:image width: " LUM_TOS(v_imagePtr->width) */
+              /*" heigth: "            LUM_TOS(v_imagePtr->height) */
+              /*" pixel-size: "        LUM_TOS(v_imagePtr->pixelSize)*/
+              /*")\n",*/
+              /*v_imagePtr->width, v_imagePtr->height, v_imagePtr->pixelSize);*/
+      /*ludilFree ((ludilPtr_t *)&v_imagePtr);*/
+    /*}*/
+  /*}*/
 
   return 0;
 }

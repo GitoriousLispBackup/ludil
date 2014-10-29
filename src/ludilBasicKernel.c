@@ -52,7 +52,7 @@ ludilKernelEvent (ludilKernelEvent_t p_event, const char *p_fmt, ...)
 {
   char          v_buffer [256];
   va_list       v_ap;
-  char          v_infoStr [] = "\e[32m[INFO]\e[0m ";
+  char          v_infoStr [] = "[INFO]";
 
   /* initializing */
   v_buffer [0] = '\0';
@@ -75,8 +75,6 @@ ludilBool_t
 ludilKernelInit (ludilEnv_t      **p_env)
 /* ------------------------------------------------------------ */
 {
-  ludilPlugin_t     *v_pluginPtr = NULL;
-
   if (p_env && (*p_env == NULL)) 
   {
     *p_env = (ludilEnv_t *)malloc (sizeof (ludilEnv_t));
@@ -93,11 +91,11 @@ ludilKernelInit (ludilEnv_t      **p_env)
     ludilBlobInit (&(*p_env)->pluginList, (sizeof (ludilPlugin_t *)+sizeof (void *))*LUDIL_KERNEL_PLUGINS);
 
     /* load the lisp plugin */
-    v_pluginPtr = ludilKernelPluginLoad ((*p_env), "Lisp");
+    ludilKernelPluginLoad ((*p_env), "Lisp");
 
     ludilKernelEvent (INFO, "Initialized kernel");
   }
-DONE:
+
   return TRUE;
 EXIT:
   return FALSE;
@@ -161,7 +159,6 @@ ludilKernelPluginLoad (ludilEnv_t       *p_env,
   ludilPlugin_t     *v_plugin = NULL;
   ludilSize_t        v_size = 0, v_i;
   void              *v_handler = NULL;
-  ludilPlugin_t      v_buf;
 
   char               v_initStr [] = "Init";   
   char               v_startStr [] = "Start";
@@ -497,8 +494,5 @@ ludilKernelFree (ludilEnv_t      **p_env)
     ludilBlobFree (&(*p_env)->heap);
     ludilBlobFree (&(*p_env)->pluginList);
   }
-DONE:
   return TRUE;
-EXIT:
-  return FALSE;
 }

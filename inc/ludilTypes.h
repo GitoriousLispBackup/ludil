@@ -117,7 +117,7 @@ typedef uint32_t ludilUInt32_t;
 typedef uint64_t ludilUInt64_t;
 
 /** unsigned int 1 byte ( 8 bit ) an alias for ludiUInt8_t */
-typedef ludilUInt8_t ludilByte_t;
+typedef char ludilByte_t;
 /*@}*/
 
 /** @addtogroup ludil_at abstract integer types */

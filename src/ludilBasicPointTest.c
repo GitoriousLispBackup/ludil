@@ -22,6 +22,7 @@
 #include <ludilMemory.h>
 #include <ludilPoint.h>
 #include <ludilTest.h>
+#include <ludilIo.h>
 
 /* variables */
 
@@ -34,6 +35,7 @@ BEGIN
   ludilIoPrintString (NULL, v_stringPtr);
 
   ludilFree ((ludilPtr_t *)&v_stringPtr);
+  SUCCESS;
 END
 
 /* test order */

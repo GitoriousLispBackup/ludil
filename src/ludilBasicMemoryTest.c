@@ -80,4 +80,5 @@ BEGIN_TESTS
   TESTM(allocTest);
   TESTC(initTest);
   TESTC(fillTest);
+  TESTC(freeTest);
 END_TESTS

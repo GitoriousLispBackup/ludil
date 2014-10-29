@@ -43,6 +43,7 @@ BEGIN
 
   ludilFree ((ludilPtr_t *)&v_stringPtr);
   ASSERTM ("string free", (v_stringPtr == NULL))
+  SUCCESS;
 END
 
 DEFTEST(printString, "testing if print string works")
