@@ -1,0 +1,7 @@
+*.o
+*.so
+*.os
+*.swp
+*.dblite
+bin/
+lib/
